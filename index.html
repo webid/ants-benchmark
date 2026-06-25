@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<!--
+    Emergent Trails // Mission Console UI
+    Tezos NFT Digital Art Gallery & Ant Foraging Telemetry Simulation
+    Formated under strict architectural whitespace, density trigger, and color tax constraints.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergent Trails // Mission Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Console Theme & Color Tax Compliance */
+        :root {
+            --console-bg: #030304;
+            --console-text: #e2e2e4;
+            --console-muted: #626265;
+            --console-accent: #ff9f00; /* Amber Glow */
+            --console-accent-dim: rgba(255, 159, 0, 0.12);
+            --console-control-bg: #111114;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--console-bg);
+            color: var(--console-text);
+            height: 100vh;
+            overflow: hidden; /* Lock body scroll */
+            display: flex;
+        }
+
+        /* Layout Structure - Strictly separated by open whitespace */
+        .container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            padding: 24px;
+            gap: 32px;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Compact, high-density, independent scroll. No borders. */
+        .sidebar {
+            width: 300px;
+            height: 100%;
+            flex-shrink: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-right: 12px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 4px;
+        }
+
+        .sidebar h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--console-accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .sidebar .subtitle {
+            color: var(--console-muted);
+            font-size: 10px;
+            line-height: 1.4;
+            margin-top: 6px;
+        }
+
+        /* Control Clusters - Default to open whitespace separation */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .control-section h3 {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--console-accent);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Parameter Controls - Monospace data density */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-group label {
+            font-size: 10px;
+            color: var(--console-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Sleek, borderless console input for seeds */
+        #seed-input {
+            width: 100px;
+            background: none;
+            border: none;
+            border-bottom: 1px solid #222226;
+            color: var(--console-text);
+            font-family: inherit;
+            font-size: 11px;
+            padding: 4px 0;
+            outline: none;
+            margin: 0;
+            -moz-appearance: textfield;
+        }
+        #seed-input::-webkit-outer-spin-button,
+        #seed-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 2px;
+            background: #1a1a1f;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 8px;
+            height: 8px;
+            background: var(--console-accent);
+            border-radius: 0; /* Square retro console thumb */
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 8px;
+            height: 8px;
+            background: var(--console-accent);
+            border-radius: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-size: 10px;
+            color: var(--console-text);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* Dropdown selection - Styled dark & borderless */
+        select.exhibit-select {
+            width: 100%;
+            padding: 6px 10px;
+            background: var(--console-control-bg);
+            border: none;
+            font-family: inherit;
+            font-size: 10px;
+            color: var(--console-text);
+            outline: none;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Colors telemetry grid */
+        .color-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .color-group label {
+            font-size: 10px;
+            color: var(--console-muted);
+            text-transform: uppercase;
+        }
+
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker-container input[type="color"] {
+            width: 18px;
+            height: 18px;
+            border: none;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        .color-value {
+            font-size: 10px;
+            color: var(--console-text);
+            text-transform: uppercase;
+        }
+
+        /* Console Buttons - Sleek, square, glowing hover */
+        .button {
+            background: var(--console-control-bg);
+            color: var(--console-text);
+            border: none;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .button:hover {
+            background: var(--console-accent);
+            color: var(--console-bg);
+        }
+
+        .button.secondary {
+            background: #18181c;
+        }
+
+        .button.secondary:hover {
+            background: var(--console-accent);
+            color: var(--console-bg);
+        }
+
+        .button.accent {
+            background: var(--console-accent-dim);
+            color: var(--console-accent);
+            border: 1px solid var(--console-accent);
+        }
+        .button.accent:hover {
+            background: var(--console-accent);
+            color: var(--console-bg);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        /* Telemetry status displays */
+        .telemetry-log {
+            font-size: 9px;
+            color: var(--console-muted);
+            line-height: 1.5;
+        }
+
+        .telemetry-log strong {
+            color: var(--console-accent);
+        }
+
+        /* Canvas Area - Immersive dark void, static locked viewport */
+        .canvas-area {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            height: 100%;
+            max-height: calc(100vh - 48px);
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: #000000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+
+        /* Loading Screen */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: var(--console-accent);
+            background: #000000;
+            z-index: 10;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Sleek Minimal Assets Modal - No borders, card outlines, or gradients */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 800px;
+            background: #08080a;
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 13px;
+            color: var(--console-accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .modal-item {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-img-container {
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: #111114;
+        }
+
+        .modal-img-container img, .modal-img-container canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .modal-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-meta-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--console-text);
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .modal-meta-artist {
+            font-size: 9px;
+            color: var(--console-muted);
+            text-transform: uppercase;
+        }
+
+        .modal-meta-status {
+            font-size: 8px;
+            color: var(--console-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Scrollbar customization for sleek dark console */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--console-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a1a20;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--console-accent);
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                padding: 16px;
+                overflow-y: auto;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding-right: 0;
+            }
+
+            .canvas-area {
+                height: auto;
+                aspect-ratio: 1;
+            }
+
+            #canvas-container {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Emergent Trails</h1>
+                <div class="subtitle">SYS_STATUS: ACTIVE // NFT_CURATION: ONLINE // TELEMETRY_FEED</div>
+            </div>
+
+            <!-- Seed Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>System Seed Configuration</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <input type="number" id="seed-input" value="12345" onchange="updateSeed()">
+                    <div style="display: flex; gap: 4px;">
+                        <button class="button secondary" style="width: 32px; height: 26px; padding: 0; min-width: 0; display: flex; align-items: center; justify-content: center; font-size: 11px;" onclick="previousSeed()">←</button>
+                        <button class="button secondary" style="width: 32px; height: 26px; padding: 0; min-width: 0; display: flex; align-items: center; justify-content: center; font-size: 11px;" onclick="nextSeed()">→</button>
+                        <button class="button" style="width: 32px; height: 26px; padding: 0; min-width: 0; display: flex; align-items: center; justify-content: center; font-size: 11px;" onclick="randomSeedAndUpdate()">↻</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Ambience Controls -->
+            <div class="control-section">
+                <h3>Gallery Ambience Matrix</h3>
+                
+                <!-- Exhibit Style -->
+                <div class="control-group">
+                    <label>Exhibition Channel</label>
+                    <select id="exhibitStyle" class="exhibit-select" onchange="updateDropdown('exhibitStyle', this.value)">
+                        <option value="all">Channel: All Exhibits Active</option>
+                        <option id="opt-screen-center" value="flow">Channel: Flow Fields Focus</option>
+                        <option id="opt-screen-left" value="tree">Channel: Recursive Chaos Focus</option>
+                        <option id="opt-screen-right" value="waves">Channel: Quantum Harmonics Focus</option>
+                    </select>
+                </div>
+
+                <!-- Floor Reflectivity -->
+                <div class="control-group">
+                    <label>Floor Gloss Matrix (Reflectivity)</label>
+                    <div class="slider-container">
+                        <input type="range" id="floorReflectivity" min="0.0" max="1.0" step="0.05" value="0.60" oninput="updateParam('floorReflectivity', this.value)">
+                        <span class="value-display" id="floorReflectivity-value">0.60</span>
+                    </div>
+                </div>
+
+                <!-- Ambient Glow -->
+                <div class="control-group">
+                    <label>Spotlight Cone / Ambient Glow</label>
+                    <div class="slider-container">
+                        <input type="range" id="glowIntensity" min="0.0" max="1.0" step="0.05" value="0.70" oninput="updateParam('glowIntensity', this.value)">
+                        <span class="value-display" id="glowIntensity-value">0.70</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ant Simulation Controls -->
+            <div class="control-section">
+                <h3>Swarm Colony Telemetry</h3>
+                
+                <!-- Ant Population -->
+                <div class="control-group">
+                    <label>Agent Population Count</label>
+                    <div class="slider-container">
+                        <input type="range" id="antPopulation" min="10" max="300" step="10" value="120" oninput="updateParam('antPopulation', this.value)">
+                        <span class="value-display" id="antPopulation-value">120</span>
+                    </div>
+                </div>
+
+                <!-- Walking Speed -->
+                <div class="control-group">
+                    <label>Agent Velocity (Base)</label>
+                    <div class="slider-container">
+                        <input type="range" id="antSpeed" min="0.5" max="2.5" step="0.1" value="1.2" oninput="updateParam('antSpeed', this.value)">
+                        <span class="value-display" id="antSpeed-value">1.2</span>
+                    </div>
+                </div>
+
+                <!-- Trail Cohesion -->
+                <div class="control-group">
+                    <label>Pheromone Cohesion Factor</label>
+                    <div class="slider-container">
+                        <input type="range" id="trailCohesion" min="0.1" max="1.0" step="0.05" value="0.80" oninput="updateParam('trailCohesion', this.value)">
+                        <span class="value-display" id="trailCohesion-value">0.80</span>
+                    </div>
+                </div>
+
+                <!-- Scout Ratio -->
+                <div class="control-group">
+                    <label>Stochastic Scout Ratio</label>
+                    <div class="slider-container">
+                        <input type="range" id="scoutRatio" min="0.0" max="0.5" step="0.05" value="0.15" oninput="updateParam('scoutRatio', this.value)">
+                        <span class="value-display" id="scoutRatio-value">0.15</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colors Section -->
+            <div class="control-section">
+                <h3>Telemetry Hues</h3>
+                
+                <!-- Candy Color -->
+                <div class="color-group">
+                    <label>Dropped Target Color</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="candyColor" value="#ff2a85" onchange="updateColor('candyColor', this.value)">
+                        <span class="color-value" id="candyColor-value">#ff2a85</span>
+                    </div>
+                </div>
+
+                <!-- Screen 1 Color -->
+                <div class="color-group">
+                    <label>Screen Hue A</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="leftScreenColor" value="#00ffcc" onchange="updateColor('leftScreenColor', this.value)">
+                        <span class="color-value" id="leftScreenColor-value">#00ffcc</span>
+                    </div>
+                </div>
+
+                <!-- Screen 2 Color -->
+                <div class="color-group">
+                    <label>Screen Hue B</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="rightScreenColor" value="#bf55ec" onchange="updateColor('rightScreenColor', this.value)">
+                        <span class="color-value" id="rightScreenColor-value">#bf55ec</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>Console Actions</h3>
+                <button class="button secondary" style="margin-bottom: 8px;" onclick="openArtworksModal()">[🔍 Ingested Assets Telemetry]</button>
+                <button id="play-pause-btn" class="button accent" style="margin-bottom: 8px;" onclick="togglePlayPause()">⏸ Pause Simulation</button>
+                <div class="button-row" style="margin-bottom: 8px;">
+                    <button class="button" onclick="resetParameters()">Reset System</button>
+                    <button class="button secondary" onclick="downloadArtwork()">Export PNG</button>
+                </div>
+                <div class="telemetry-log" style="margin-bottom: 8px;">
+                    <strong>TELEMETRY_ALERT:</strong> Click anywhere on the dark gallery floor matrix to relocate the candy food source. Swarm agents will automatically steer and recalculate path trajectories in real-time.
+                </div>
+                <div id="api-status-log" class="telemetry-log" style="border-top: 1px solid #1a1a20; padding-top: 8px; color: var(--console-muted);">
+                    <strong>OBJKT_API_STREAM:</strong> CONNECTING_TO_TEZOS_BLOCKCHAIN...
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">
+                    <div>INIT_SYSTEM_CONSOLE_BOOT...</div>
+                    <div style="font-size: 9px; color: var(--console-muted); margin-top: 8px;">CALIBRATING_3D_PERSPECTIVE_MATRICES</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingested Artworks Modal (Strictly compliant with whitespace guidelines) -->
+    <div id="artworks-modal" class="modal-overlay" onclick="closeArtworksModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Ingested Exhibition Assets Telemetry</h2>
+                <button class="button" style="width: auto; padding: 4px 10px;" onclick="closeArtworksModal(event)">[Close_Console]</button>
+            </div>
+            <div id="modal-art-grid" class="modal-grid">
+                <!-- Dynamically Populated via Javascript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARAMETER DEFINITIONS & MEMORY ALLOCATION
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 12345,
+            exhibitStyle: 'all',
+            floorReflectivity: 0.60,
+            glowIntensity: 0.70,
+            antPopulation: 120,
+            antSpeed: 1.2,
+            trailCohesion: 0.80,
+            scoutRatio: 0.15,
+            candySize: 12,
+            colorPalette: ['#ff2a85', '#00ffcc', '#bf55ec'] // Candy, Left, Right
+        };
+
+        let defaultParams = {...params}; // Defaults for reset
+        let isPaused = false;
+
+        // Swarm and path nodes
+        let ants = [];
+        let nestPos3D;
+        let candyPos3D;
+        let p1Offset, p2Offset; 
+        let isRenderingReflection = false;
+
+        // Generative art fallbacks
+        let centerScreenBuffer;
+        let flowParticles = [];
+        const flowParticleCount = 60;
+        let spotLeft3D, spotRight3D;
+
+        // Objkt Real-time Blockchain Art Integration
+        let loadedArtworks = []; // Array of { img, title, artist, isFallback }
+        let fallbackArtworks = []; // Persisted copy of fallback graphics
+
+        function setup() {
+            let canvasContainer = document.getElementById('canvas-container');
+            let canvas = createCanvas(1200, 1200);
+            canvas.parent('canvas-container');
+            
+            // Setup offscreen flow field buffer
+            centerScreenBuffer = createGraphics(400, 300);
+            centerScreenBuffer.background(10, 10, 12);
+            for(let i = 0; i < flowParticleCount; i++) {
+                flowParticles.push({
+                    pos: createVector(random(centerScreenBuffer.width), random(centerScreenBuffer.height)),
+                    vel: createVector(0, 0),
+                    speed: random(0.5, 2.0),
+                    col: color(random(230, 255), random(100, 150), random(50, 100))
+                });
+            }
+
+            initializeSystem();
+            
+            // Query Objkt API for real Tezos artworks
+            fetchTezosNFTArtworks();
+
+            // Remove loading message
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function initializeSystem() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+
+            // Establish physical 3D Gallery Box coordinates
+            // Floor Y = -1.5, Ceiling Y = 1.5, Left Wall X = -2.0, Right Wall X = 2.0.
+            nestPos3D = createVector(-1.25, -1.5, 1.15); // Nest crack
+            candyPos3D = createVector(0.8, -1.5, 2.3);  // Dropped candy near Pedestal 2
+
+            // Trail path noise variation
+            p1Offset = createVector(random(-0.15, 0.25), 0, random(-0.05, 0.15));
+            p2Offset = createVector(random(-0.25, 0.15), 0, random(-0.10, 0.10));
+
+            spotLeft3D = createVector(-1.1, 1.5, 3.2);  
+            spotRight3D = createVector(0.75, 1.5, 2.2);  
+
+            // Allocate swarm agents
+            ants = [];
+            for (let i = 0; i < params.antPopulation; i++) {
+                ants.push(new Ant(i));
+            }
+
+            // If we don't have real artworks (or they are fallbacks), regenerate the fallbacks with the new seed!
+            if (loadedArtworks.length === 0 || loadedArtworks.some(art => art.isFallback)) {
+                loadLocalFallbackArtworks();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // OBJKT BLOCKCHAIN ART API QUERIES & RESILIENT FALLBACKS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        async function fetchTezosNFTArtworks() {
+            const apiStatus = document.getElementById('api-status-log');
+            
+            // GraphQL query to fetch recent fxhash generative artworks on Tezos
+            const query = `
+                query GetFxhashArtworks {
+                    token(
+                        limit: 100,
+                        where: {
+                            fa_contract: { _eq: "KT1U6EHmNxJTkvaWJ4ThczG4FSDaHC21ssvi" },
+                            display_uri: { _is_null: false }
+                        },
+                        order_by: { timestamp: desc }
+                    ) {
+                        name
+                        artifact_uri
+                        display_uri
+                        creators {
+                            holder {
+                                alias
+                                address
+                            }
+                        }
+                    }
+                }
+            `;
+
+            try {
+                const response = await fetch('https://data.objkt.com/v3/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+                
+                const result = await response.json();
+                if (result.data && result.data.token && result.data.token.length > 0) {
+                    apiStatus.innerHTML = `<strong>OBJKT_API_STREAM:</strong> FETCH_SUCCESS // RESOLVING_IPFS_RESOURCES...`;
+                    
+                    let tokens = result.data.token.filter(t => t.display_uri || t.artifact_uri);
+                    
+                    // Parse through public proxy / IPFS gateway
+                    let artworks = tokens.map(t => {
+                        let rawUri = t.display_uri || t.artifact_uri;
+                        let ipfsUrl = rawUri;
+                        if (rawUri.startsWith('ipfs://')) {
+                            let cid = rawUri.replace('ipfs://', '');
+                            ipfsUrl = `https://ipfs.fileship.xyz/${cid}`;
+                        }
+                        let artist = "Unknown Artist";
+                        if (t.creators && t.creators[0] && t.creators[0].holder) {
+                            artist = t.creators[0].holder.alias || t.creators[0].holder.address.substring(0, 8);
+                        }
+                        return {
+                            title: t.name,
+                            url: ipfsUrl,
+                            artist: artist
+                        };
+                    });
+
+                    // Fisher-Yates shuffle to randomize the retrieved artworks
+                    for (let i = artworks.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [artworks[i], artworks[j]] = [artworks[j], artworks[i]];
+                    }
+
+                    // Queue loader
+                    loadArtworksIntoGallery(artworks);
+                } else {
+                    loadLocalFallbackArtworks();
+                }
+            } catch (err) {
+                console.error("Objkt API query failed, using generative fallbacks.", err);
+                loadLocalFallbackArtworks();
+            }
+        }
+
+        function loadArtworksIntoGallery(artworks) {
+            let loadedCount = 0;
+            const apiStatus = document.getElementById('api-status-log');
+            
+            // We want to fill 3 slots: 0 (center), 1 (left), 2 (right)
+            let nextArtworkIdx = 0;
+            
+            function tryLoadSlot(slotIndex) {
+                if (nextArtworkIdx >= artworks.length) {
+                    console.warn(`No more artworks to try for slot ${slotIndex + 1}.`);
+                    return;
+                }
+                
+                let art = artworks[nextArtworkIdx++];
+                loadImage(art.url, 
+                    // Success callback
+                    (img) => {
+                        // Overwrite the slot instead of pushing!
+                        // Note: We do NOT call oldArt.img.remove() here because the fallback graphics
+                        // are persistently displayed on the pedestals/columns.
+                        loadedArtworks[slotIndex] = {
+                            img: img,
+                            title: art.title,
+                            artist: art.artist,
+                            isFallback: false
+                        };
+                        loadedCount++;
+                        console.log(`Loaded Blockchain Artwork [${slotIndex + 1}]: "${art.title}" by ${art.artist}`);
+                        
+                        if (apiStatus) {
+                            apiStatus.innerHTML = `<strong>OBJKT_API_STREAM:</strong> PIPELINE_RESOLVED_OK [${loadedCount}/3] // INGEST_SUCCESS`;
+                        }
+                        
+                        // Update the dropdown menu option to show the real artwork name!
+                        let optId = slotIndex === 0 ? 'opt-screen-center' : (slotIndex === 1 ? 'opt-screen-left' : 'opt-screen-right');
+                        let optElem = document.getElementById(optId);
+                        if (optElem) {
+                            optElem.textContent = `Channel: "${art.title.substring(0, 18)}${art.title.length > 18 ? '...' : ''}"`;
+                        }
+                    },
+                    // Fail callback: try loading the next available artwork for this same slot
+                    (err) => {
+                        console.warn(`Failed to retrieve IPFS asset for "${art.title}". Trying another...`);
+                        tryLoadSlot(slotIndex);
+                    }
+                );
+            }
+            
+            // Start loading for the 3 slots sequentially/parallelly from the shuffled array
+            tryLoadSlot(0);
+            tryLoadSlot(1);
+            tryLoadSlot(2);
+        }
+
+        // Generates stunning procedural art thumbnails if offline or blocked by local CORS
+        function loadLocalFallbackArtworks() {
+            const apiStatus = document.getElementById('api-status-log');
+            if (apiStatus) {
+                apiStatus.innerHTML = `<strong>OBJKT_API_STREAM:</strong> OFFLINE_FALLBACK // GENERATING_LOCAL_ASSETS...`;
+            }
+            
+            let names = ["Stochastic Currents", "Recursive Chaos", "Quantum Waveforms"];
+            let engines = ["Flow Field Engine A", "Fractal Engine B", "Harmonic Engine C"];
+            let palettes = [params.colorPalette[1], params.colorPalette[1], params.colorPalette[2]];
+            
+            // Clean up old fallback graphics to prevent memory leaks in p5.js
+            if (fallbackArtworks && fallbackArtworks.length > 0) {
+                for (let art of fallbackArtworks) {
+                    if (art.img && typeof art.img.remove === 'function') {
+                        art.img.remove();
+                    }
+                }
+            }
+            
+            loadedArtworks = [];
+            for (let i = 0; i < 3; i++) {
+                let pg = createGraphics(300, 300);
+                pg.background(10, 10, 12);
+                
+                // Draw high-tech vector art thumbnail
+                pg.stroke(palettes[i]);
+                pg.strokeWeight(2);
+                pg.noFill();
+                
+                if (i === 0) {
+                    // Flow field lines
+                    for (let y = 40; y < 260; y += 18) {
+                        pg.beginShape();
+                        for (let x = 40; x < 260; x += 15) {
+                            let n = noise(x * 0.015, y * 0.015) * 28;
+                            pg.vertex(x, y + n);
+                        }
+                        pg.endShape();
+                    }
+                } else if (i === 1) {
+                    // Fractal branches
+                    let drawB = (x, y, len, angle, depth) => {
+                        if (depth === 0) return;
+                        let nx = x + cos(angle) * len;
+                        let ny = y - sin(angle) * len;
+                        pg.line(x, y, nx, ny);
+                        drawB(nx, ny, len * 0.72, angle - 0.45, depth - 1);
+                        drawB(nx, ny, len * 0.72, angle + 0.45, depth - 1);
+                    };
+                    drawB(150, 250, 54, HALF_PI, 5);
+                } else {
+                    // Interference grid
+                    for (let r = 25; r < 120; r += 16) {
+                        pg.ellipse(150, 150, r * 2, r * 1.3);
+                        pg.ellipse(150, 150, r * 1.3, r * 2);
+                    }
+                }
+                
+                loadedArtworks.push({
+                    img: pg,
+                    title: names[i],
+                    artist: engines[i],
+                    isFallback: true
+                });
+            }
+            
+            // Copy to fallbackArtworks to persist them for column projection
+            fallbackArtworks = [...loadedArtworks];
+            
+            // Reset dropdown option names to fallback defaults
+            let optIds = ['opt-screen-center', 'opt-screen-left', 'opt-screen-right'];
+            let defaultChannels = ["Flow Fields Focus", "Recursive Chaos Focus", "Quantum Harmonics Focus"];
+            for (let i = 0; i < 3; i++) {
+                let optElem = document.getElementById(optIds[i]);
+                if (optElem) {
+                    optElem.textContent = `Channel: ${defaultChannels[i]}`;
+                }
+            }
+
+            if (apiStatus) {
+                apiStatus.innerHTML = `<strong>OBJKT_API_STREAM:</strong> OFFLINE_OK // LOCAL_CACHED_ASSETS_INGESTED`;
+            }
+        }
+
+        function fillRemainingWithLocalFallbacks() {
+            let names = ["Stochastic Currents", "Recursive Chaos", "Quantum Waveforms"];
+            let engines = ["Flow Field Engine A", "Fractal Engine B", "Harmonic Engine C"];
+            let palettes = [params.colorPalette[1], params.colorPalette[1], params.colorPalette[2]];
+            
+            let needed = 3 - loadedArtworks.length;
+            for (let i = 3 - needed; i < 3; i++) {
+                let pg = createGraphics(300, 300);
+                pg.background(10, 10, 12);
+                pg.stroke(palettes[i]);
+                pg.strokeWeight(2);
+                pg.noFill();
+                
+                if (i === 0) {
+                    for (let y = 40; y < 260; y += 18) {
+                        pg.beginShape();
+                        for (let x = 40; x < 260; x += 15) {
+                            let n = noise(x * 0.015, y * 0.015) * 28;
+                            pg.vertex(x, y + n);
+                        }
+                        pg.endShape();
+                    }
+                } else if (i === 1) {
+                    let drawB = (x, y, len, angle, depth) => {
+                        if (depth === 0) return;
+                        let nx = x + cos(angle) * len;
+                        let ny = y - sin(angle) * len;
+                        pg.line(x, y, nx, ny);
+                        drawB(nx, ny, len * 0.72, angle - 0.45, depth - 1);
+                        drawB(nx, ny, len * 0.72, angle + 0.45, depth - 1);
+                    };
+                    drawB(150, 250, 54, HALF_PI, 5);
+                } else {
+                    for (let r = 25; r < 120; r += 16) {
+                        pg.ellipse(150, 150, r * 2, r * 1.3);
+                    }
+                }
+                
+                loadedArtworks.push({
+                    img: pg,
+                    title: names[i],
+                    artist: engines[i],
+                    isFallback: true
+                });
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // 3D MATHEMATICAL PROJECTION MATRICES
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function project3D(X, Y, Z) {
+            let projectedY = Y;
+            if (isRenderingReflection) {
+                // Vertical mirroring reflection across floor plane Y = -1.5
+                projectedY = -3.0 - Y;
+            }
+            
+            let horizon = 450;
+            let focalX = 520;
+            let focalY = 750;
+            
+            let x = width / 2 + (X * focalX) / Z;
+            let y = horizon + (focalY * (-projectedY - 0.9)) / Z; 
+            
+            return {
+                x: x,
+                y: y,
+                scale: 1.0 / Z
+            };
+        }
+
+        function unprojectFloor(x2d, y2d) {
+            let horizon = 450;
+            let focalX = 520;
+            let focalY = 750;
+            
+            let Y = -1.5; // floor
+            let Z = (focalY * (1.5 - 0.9)) / (y2d - horizon);
+            let X = ((x2d - width / 2) * Z) / focalX;
+            
+            return createVector(X, Y, Z);
+        }
+
+        function getTrailPoint(t) {
+            let p0 = nestPos3D;
+            let p1 = p5.Vector.lerp(nestPos3D, candyPos3D, 0.33).add(p1Offset);
+            let p2 = p5.Vector.lerp(nestPos3D, candyPos3D, 0.66).add(p2Offset);
+            let p3 = candyPos3D;
+
+            let x = bezierPoint(p0.x, p1.x, p2.x, p3.x, t);
+            let y = -1.5; 
+            let z = bezierPoint(p0.z, p1.z, p2.z, p3.z, t);
+
+            return createVector(x, y, z);
+        }
+
+        function clipToFloor() {
+            let bl = project3D(-2.0, -1.5, 6.0);
+            let br = project3D(2.0, -1.5, 6.0);
+            let nbr = project3D(2.0, -1.5, 1.0);
+            let nbl = project3D(-2.0, -1.5, 1.0);
+            
+            drawingContext.beginPath();
+            drawingContext.moveTo(bl.x, bl.y);
+            drawingContext.lineTo(br.x, br.y);
+            drawingContext.lineTo(nbr.x, nbr.y);
+            drawingContext.lineTo(nbl.x, nbl.y);
+            drawingContext.closePath();
+            drawingContext.clip();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SYSTEM DRAW CYCLE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function draw() {
+            if (isPaused) return;
+
+            // 1. Update offscreen generative buffers
+            updateFlowFieldBuffer();
+
+            // 2. Clear canvas to absolute black
+            background(0, 0, 0);
+
+            // 3. Render 3D Floor Reflections (Clipped to Floor Surface using p5 native clipping)
+            isRenderingReflection = true;
+            push();
+            beginClip();
+            let bl = project3D(-2.0, -1.5, 6.0);
+            let br = project3D(2.0, -1.5, 6.0);
+            let nbr = project3D(2.0, -1.5, 1.0);
+            let nbl = project3D(-2.0, -1.5, 1.0);
+            beginShape();
+            vertex(bl.x, bl.y);
+            vertex(br.x, br.y);
+            vertex(nbr.x, nbr.y);
+            vertex(nbl.x, nbl.y);
+            endShape(CLOSE);
+            endClip();
+            
+            drawGalleryArtworks();
+            drawPedestalsAndSculptures();
+            pop();
+            isRenderingReflection = false;
+
+            // 4. Draw Floor Surface, seams, and target candy
+            drawFloorSurface();
+
+            // 5. Draw background walls & live screens
+            drawGalleryWalls();
+            drawGalleryArtworks();
+
+            // 6. Draw Ant Reflections on polished floor (Clipped to Floor Surface using p5 native clipping)
+            if (params.floorReflectivity > 0) {
+                isRenderingReflection = true;
+                push();
+                beginClip();
+                let bl2 = project3D(-2.0, -1.5, 6.0);
+                let br2 = project3D(2.0, -1.5, 6.0);
+                let nbr2 = project3D(2.0, -1.5, 1.0);
+                let nbl2 = project3D(-2.0, -1.5, 1.0);
+                beginShape();
+                vertex(bl2.x, bl2.y);
+                vertex(br2.x, br2.y);
+                vertex(nbr2.x, nbr2.y);
+                vertex(nbl2.x, nbl2.y);
+                endShape(CLOSE);
+                endClip();
+                
+                for (let ant of ants) {
+                    ant.draw();
+                }
+                pop();
+                isRenderingReflection = false;
+            }
+
+            // 7. Draw Ant Shadows
+            for (let ant of ants) {
+                ant.drawShadow();
+            }
+
+            // 8. Update and Draw Swarm Agents
+            for (let ant of ants) {
+                ant.update();
+                ant.draw();
+            }
+
+            // 9. Draw Pedestals and floating glowing sculptures (in front of ants)
+            drawPedestalsAndSculptures();
+
+            // 10. Draw Spotlight Cones and Light Pools (volumetric glow)
+            drawSpotlights();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // RENDER PIPELINE - 3D GRAPHICS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function drawGalleryWalls() {
+            noStroke();
+
+            // Far Wall (Z = 6.0)
+            let tl = project3D(-2.0, 1.5, 6.0);
+            let tr = project3D(2.0, 1.5, 6.0);
+            let br = project3D(2.0, -1.5, 6.0);
+            let bl = project3D(-2.0, -1.5, 6.0);
+            
+            fill(38, 38, 44);
+            beginShape();
+            vertex(tl.x, tl.y);
+            vertex(tr.x, tr.y);
+            vertex(br.x, br.y);
+            vertex(bl.x, bl.y);
+            endShape(CLOSE);
+
+            // Left Wall (X = -2.0)
+            let ntl = project3D(-2.0, 1.5, 1.0);
+            let nbl = project3D(-2.0, -1.5, 1.0);
+            
+            fill(28, 28, 34);
+            beginShape();
+            vertex(ntl.x, ntl.y);
+            vertex(tl.x, tl.y);
+            vertex(bl.x, bl.y);
+            vertex(nbl.x, nbl.y);
+            endShape(CLOSE);
+
+            // Right Wall (X = 2.0)
+            let ntr = project3D(2.0, 1.5, 1.0);
+            let nbr = project3D(2.0, -1.5, 1.0);
+            
+            fill(28, 28, 34);
+            beginShape();
+            vertex(ntr.x, ntr.y);
+            vertex(tr.x, tr.y);
+            vertex(br.x, br.y);
+            vertex(nbr.x, nbr.y);
+            endShape(CLOSE);
+
+            // Ceiling (Y = 1.5)
+            fill(22, 22, 26);
+            beginShape();
+            vertex(ntl.x, ntl.y);
+            vertex(ntr.x, ntr.y);
+            vertex(tr.x, tr.y);
+            vertex(tl.x, tl.y);
+            endShape(CLOSE);
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // AMBIENT GLOW WASHES FROM DIGITAL SCREENS ONTO WALLS (Radial Gradients)
+            // ═══════════════════════════════════════════════════════════════════════
+            let exhibit = params.exhibitStyle;
+
+            // Left Wall Screen Ambient Wash (dominant hue: ColorPalette[1] - Screen Hue A)
+            if (exhibit === 'all' || exhibit === 'tree') {
+                let leftGlowCenter = project3D(-2.0, 0.1, 3.4);
+                let col = color(params.colorPalette[1]);
+                let rad = 260 * leftGlowCenter.scale;
+                if (rad > 0) {
+                    push();
+                    let grad = drawingContext.createRadialGradient(
+                        leftGlowCenter.x, leftGlowCenter.y, 0,
+                        leftGlowCenter.x, leftGlowCenter.y, rad
+                    );
+                    let alpha = 0.16 * params.glowIntensity;
+                    grad.addColorStop(0, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha})`);
+                    grad.addColorStop(0.4, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha * 0.4})`);
+                    grad.addColorStop(1, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, 0)`);
+                    noStroke();
+                    fill(255); // Force p5 fill state
+                    drawingContext.fillStyle = grad;
+                    ellipse(leftGlowCenter.x, leftGlowCenter.y, rad * 2, rad * 1.6);
+                    pop();
+                }
+            }
+
+            // Right Wall Screen Ambient Wash (dominant hue: ColorPalette[2] - Screen Hue B)
+            if (exhibit === 'all' || exhibit === 'waves') {
+                let rightGlowCenter = project3D(2.0, 0.1, 3.4);
+                let col = color(params.colorPalette[2]);
+                let rad = 260 * rightGlowCenter.scale;
+                if (rad > 0) {
+                    push();
+                    let grad = drawingContext.createRadialGradient(
+                        rightGlowCenter.x, rightGlowCenter.y, 0,
+                        rightGlowCenter.x, rightGlowCenter.y, rad
+                    );
+                    let alpha = 0.16 * params.glowIntensity;
+                    grad.addColorStop(0, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha})`);
+                    grad.addColorStop(0.4, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha * 0.4})`);
+                    grad.addColorStop(1, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, 0)`);
+                    noStroke();
+                    fill(255); // Force p5 fill state
+                    drawingContext.fillStyle = grad;
+                    ellipse(rightGlowCenter.x, rightGlowCenter.y, rad * 2, rad * 1.6);
+                    pop();
+                }
+            }
+
+            // Far Wall Screen Ambient Wash (dominant hue: ColorPalette[1])
+            if (exhibit === 'all' || exhibit === 'flow') {
+                let centerGlowCenter = project3D(0.0, 0.1, 6.0);
+                let col = color(params.colorPalette[1]);
+                let rad = 360 * centerGlowCenter.scale;
+                if (rad > 0) {
+                    push();
+                    let grad = drawingContext.createRadialGradient(
+                        centerGlowCenter.x, centerGlowCenter.y, 0,
+                        centerGlowCenter.x, centerGlowCenter.y, rad
+                    );
+                    let alpha = 0.20 * params.glowIntensity;
+                    grad.addColorStop(0, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha})`);
+                    grad.addColorStop(0.4, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, ${alpha * 0.4})`);
+                    grad.addColorStop(1, `rgba(${col.levels[0]}, ${col.levels[1]}, ${col.levels[2]}, 0)`);
+                    noStroke();
+                    fill(255); // Force p5 fill state
+                    drawingContext.fillStyle = grad;
+                    ellipse(centerGlowCenter.x, centerGlowCenter.y, rad * 2, rad * 1.5);
+                    pop();
+                }
+            }
+        }
+
+        function drawFloorSurface() {
+            let bl = project3D(-2.0, -1.5, 6.0);
+            let br = project3D(2.0, -1.5, 6.0);
+            let nbr = project3D(2.0, -1.5, 1.0);
+            let nbl = project3D(-2.0, -1.5, 1.0);
+
+            // Floor overlay - dampens reflections
+            noStroke();
+            // Brighter floor surface background color
+            fill(30, 30, 38, 255 * (1.0 - params.floorReflectivity * 0.72));
+            beginShape();
+            vertex(bl.x, bl.y);
+            vertex(br.x, br.y);
+            vertex(nbr.x, nbr.y);
+            vertex(nbl.x, nbl.y);
+            endShape(CLOSE);
+
+            // Floor Grid Seams (Monospace matrix aesthetic) - Brighter and more visible!
+            stroke(110, 110, 125, 180);
+            strokeWeight(1.5);
+
+            // Longitudinal grid joints
+            let seamXs = [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5];
+            for (let sx of seamXs) {
+                let pStart = project3D(sx, -1.5, 1.0);
+                let pEnd = project3D(sx, -1.5, 6.0);
+                line(pStart.x, pStart.y, pEnd.x, pEnd.y);
+            }
+
+            // Transverse grid joints
+            let seamZs = [1.2, 1.5, 2.0, 2.7, 3.7, 5.2];
+            for (let sz of seamZs) {
+                let pL = project3D(-2.0, -1.5, sz);
+                let pR = project3D(2.0, -1.5, sz);
+                line(pL.x, pL.y, pR.x, pR.y);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // AMBIENT FLOOR BOUNCE LIGHT
+            // ═══════════════════════════════════════════════════════════════════════
+            let floorCenter = project3D(0.0, -1.5, 3.5);
+            let floorGlowCol = color(100, 100, 130); // Soft, sophisticated gallery bounce light
+            noStroke();
+            for (let r = 3; r > 0; r--) {
+                fill(floorGlowCol.levels[0], floorGlowCol.levels[1], floorGlowCol.levels[2], 15 * r * params.glowIntensity);
+                ellipse(floorCenter.x, floorCenter.y, 380 * r * floorCenter.scale, 150 * r * floorCenter.scale);
+            }
+
+            drawWallCrack();
+            drawCandyAndCrumbs();
+        }
+
+        function drawWallCrack() {
+            let center = project3D(-1.25, -1.5, 1.15);
+            stroke(0, 0, 0);
+            strokeWeight(3);
+            noFill();
+            
+            beginShape();
+            vertex(center.x - 30, center.y + 10);
+            vertex(center.x - 12, center.y + 2);
+            vertex(center.x, center.y);
+            vertex(center.x + 8, center.y - 6);
+            vertex(center.x + 22, center.y - 4);
+            endShape();
+        }
+
+        function drawCandyAndCrumbs() {
+            let cp = project3D(candyPos3D.x, -1.5, candyPos3D.z);
+            let size = params.candySize * cp.scale;
+
+            // Target glow highlight
+            noStroke();
+            let glowCol = color(params.colorPalette[0]);
+            for (let r = 4; r > 0; r--) {
+                fill(glowCol.levels[0], glowCol.levels[1], glowCol.levels[2], 25 * r * params.glowIntensity);
+                ellipse(cp.x, cp.y, size * r * 1.5, size * r * 0.6);
+            }
+
+            // Target Core - glowing candy drop
+            if (!isRenderingReflection) {
+                fill(glowCol);
+                stroke(255, 255, 255, 180);
+                strokeWeight(1.2 * cp.scale);
+                ellipse(cp.x, cp.y, size * 2.2, size * 0.9);
+                ellipse(cp.x - size*0.4, cp.y - size*0.1, size * 1.5, size * 0.7);
+                
+                fill(255, 255, 255, 220);
+                noStroke();
+                ellipse(cp.x - size*0.5, cp.y - size*0.2, size * 0.4, size * 0.15);
+            }
+
+            // Scatter food crumbs
+            randomSeed(params.seed + 100);
+            noStroke();
+            for (let i = 0; i < 15; i++) {
+                let angle = random(TWO_PI);
+                let dist = random(0.04, 0.25);
+                let cx = candyPos3D.x + cos(angle) * dist;
+                let cz = candyPos3D.z + sin(angle) * dist;
+                
+                let crumbProj = project3D(cx, -1.5, cz);
+                let cSize = random(2, 5) * crumbProj.scale;
+                
+                fill(glowCol.levels[0], glowCol.levels[1], glowCol.levels[2], 180);
+                ellipse(crumbProj.x, crumbProj.y, cSize * 1.5, cSize * 0.7);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // PORTED ARTWORK OR GENERATIVE FALLBACK GRAPHICS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function drawGalleryArtworks() {
+            let exhibit = params.exhibitStyle;
+
+            // EXHIBIT 1: CENTER SCREEN (Flat on back wall, Z = 6.0)
+            if (exhibit === 'all' || exhibit === 'flow') {
+                let tl = project3D(-1.1, 0.45, 6.0);
+                let br = project3D(1.1, -0.25, 6.0);
+                let w = br.x - tl.x;
+                let h = br.y - tl.y;
+                
+                if (isRenderingReflection) {
+                    let col = color(params.colorPalette[1]);
+                    fill(col.levels[0], col.levels[1], col.levels[2], 30 * params.floorReflectivity);
+                    rect(tl.x - 4, tl.y - 4, w + 8, h + 8);
+                } else {
+                    fill(5, 5, 7);
+                    rect(tl.x - 2, tl.y - 2, w + 4, h + 4);
+                    
+                    // Draw Real Tezos Art / Fallback Graphics
+                    if (loadedArtworks[0]) {
+                        // Preserve aspect ratio inside the wide center screen frame
+                        let img = loadedArtworks[0].img;
+                        let aspect = img.width / img.height;
+                        let targetW = h * aspect;
+                        let drawW = targetW;
+                        let drawH = h;
+                        let offsetX = 0;
+                        let offsetY = 0;
+                        if (targetW <= w) {
+                            offsetX = (w - targetW) / 2;
+                        } else {
+                            drawW = w;
+                            drawH = w / aspect;
+                            offsetY = (h - drawH) / 2;
+                        }
+                        image(img, tl.x + offsetX, tl.y + offsetY, drawW, drawH);
+                        drawExhibitionLabel(1.25, -0.25, 6.0, loadedArtworks[0].title, loadedArtworks[0].isFallback ? "Generative Code" : `Artist: ${loadedArtworks[0].artist}`);
+                    } else {
+                        image(centerScreenBuffer, tl.x, tl.y, w, h);
+                        drawExhibitionLabel(1.25, -0.25, 6.0, "ꜩ 'Stochastic Currents'", "Flow Field Fallback");
+                    }
+                    
+                    stroke(40, 40, 45);
+                    strokeWeight(1);
+                    noFill();
+                    rect(tl.x, tl.y, w, h);
+                }
+            }
+
+            // EXHIBIT 2: LEFT SCREEN (3D perspective on Left Wall, X = -2.0)
+            if (exhibit === 'all' || exhibit === 'tree') {
+                let zStart = 2.6, zEnd = 4.2;
+                let yBot = -0.25, yTop = 0.45;
+
+                let tl = project3D(-2.0, yTop, zEnd);
+                let bl = project3D(-2.0, yBot, zEnd);
+                let br = project3D(-2.0, yBot, zStart);
+                let tr = project3D(-2.0, yTop, zStart);
+
+                // Backdrop frame
+                stroke(30, 30, 32);
+                strokeWeight(1);
+                fill(4, 4, 6);
+                beginShape();
+                vertex(tl.x, tl.y);
+                vertex(tr.x, tr.y);
+                vertex(br.x, br.y);
+                vertex(bl.x, bl.y);
+                endShape(CLOSE);
+
+                if (loadedArtworks[1]) {
+                    drawPerspectiveTexture(-2.0, yBot, yTop, zStart, zEnd, loadedArtworks[1].img, true);
+                    if (!isRenderingReflection) {
+                        drawExhibitionLabel(-2.0, -0.25, zStart - 0.25, loadedArtworks[1].title, loadedArtworks[1].isFallback ? "Fractal Engine" : `Artist: ${loadedArtworks[1].artist}`, true);
+                    }
+                } else {
+                    // Fallback fractal tree
+                    push();
+                    let col = color(params.colorPalette[1]);
+                    stroke(col.levels[0], col.levels[1], col.levels[2], isRenderingReflection ? 70 * params.floorReflectivity : 200);
+                    let branchAngle = sin(frameCount * 0.008) * 0.15 + 0.55;
+                    drawRecursiveBranch3D(-2.0, yBot + 0.15, (zStart + zEnd) / 2, 0.35, HALF_PI, branchAngle, 6);
+                    pop();
+                    
+                    if (!isRenderingReflection) {
+                        drawExhibitionLabel(-2.0, -0.25, zStart - 0.25, "ꜩ 'Recursive Chaos'", "L-System Fractal", true);
+                    }
+                }
+            }
+
+            // EXHIBIT 3: RIGHT SCREEN (3D perspective on Right Wall, X = 2.0)
+            if (exhibit === 'all' || exhibit === 'waves') {
+                let zStart = 2.6, zEnd = 4.2;
+                let yBot = -0.25, yTop = 0.45;
+
+                let tl = project3D(2.0, yTop, zStart);
+                let bl = project3D(2.0, yBot, zStart);
+                let br = project3D(2.0, yBot, zEnd);
+                let tr = project3D(2.0, yTop, zEnd);
+
+                // Backdrop frame
+                stroke(30, 30, 32);
+                strokeWeight(1);
+                fill(4, 4, 6);
+                beginShape();
+                vertex(tl.x, tl.y);
+                vertex(tr.x, tr.y);
+                vertex(br.x, br.y);
+                vertex(bl.x, bl.y);
+                endShape(CLOSE);
+
+                if (loadedArtworks[2]) {
+                    drawPerspectiveTexture(2.0, yBot, yTop, zStart, zEnd, loadedArtworks[2].img, false);
+                    if (!isRenderingReflection) {
+                        drawExhibitionLabel(2.0, -0.25, zStart + 0.1, loadedArtworks[2].title, loadedArtworks[2].isFallback ? "Interference Grid" : `Artist: ${loadedArtworks[2].artist}`, false);
+                    }
+                } else {
+                    // Fallback quantum waveforms
+                    push();
+                    let col = color(params.colorPalette[2]);
+                    stroke(col.levels[0], col.levels[1], col.levels[2], isRenderingReflection ? 60 * params.floorReflectivity : 160);
+                    strokeWeight(1);
+                    noFill();
+
+                    let linesCount = 12;
+                    for(let i = 0; i < linesCount; i++) {
+                        let t = i / (linesCount - 1);
+                        let lineY = lerp(yBot + 0.1, yTop - 0.1, t);
+                        beginShape();
+                        for(let z = zStart + 0.1; z < zEnd - 0.1; z += 0.1) {
+                            let phase = frameCount * 0.03 + i * 0.2;
+                            let waveOffset = sin(z * 6.0 + phase) * cos(z * 3.0 - phase * 0.5) * 0.08;
+                            let wp = project3D(2.0, lineY + waveOffset, z);
+                            vertex(wp.x, wp.y);
+                        }
+                        endShape();
+                    }
+                    pop();
+
+                    if (!isRenderingReflection) {
+                        drawExhibitionLabel(2.0, -0.25, zStart + 0.1, "ꜩ 'Quantum Waveforms'", "Interference Grid", false);
+                    }
+                }
+            }
+        }
+
+        function drawPerspectiveTexture(wallX, yBot, yTop, zStart, zEnd, img, isLeftWall) {
+            let steps = 70; // Slice density
+            let imgAlpha = isRenderingReflection ? 80 * params.floorReflectivity : 240;
+            
+            // Calculate 3D dimensions
+            let h3D = yTop - yBot;
+            let screenW3D = zEnd - zStart;
+            let aspect = img.width / img.height;
+            let w3D = h3D * aspect;
+            
+            let drawZStart = zStart;
+            let drawZEnd = zEnd;
+            let srcXStart = 0;
+            let srcXEnd = img.width;
+            
+            if (w3D <= screenW3D) {
+                // Pillarbox: center the narrower artwork in Z
+                let zCenter = (zStart + zEnd) / 2;
+                drawZStart = zCenter - w3D / 2;
+                drawZEnd = zCenter + w3D / 2;
+            } else {
+                // Crop: crop the wider artwork horizontally
+                let visibleWidth = img.height * (screenW3D / h3D);
+                srcXStart = (img.width - visibleWidth) / 2;
+                srcXEnd = img.width - srcXStart;
+            }
+            
+            push();
+            tint(255, imgAlpha);
+            
+            for (let i = 0; i < steps; i++) {
+                let t = i / steps;
+                let nextT = (i + 1) / steps;
+                
+                let z = lerp(drawZStart, drawZEnd, t);
+                let nextZ = lerp(drawZStart, drawZEnd, nextT);
+                
+                let pTop = project3D(wallX, yTop, z);
+                let pBot = project3D(wallX, yBot, z);
+                let pNextTop = project3D(wallX, yTop, nextZ);
+                
+                // Destination coordinates on canvas
+                let dx = min(pTop.x, pNextTop.x);
+                let dw = abs(pNextTop.x - pTop.x) + 1.2; // Overlap to prevent vertical scanline gaps
+                
+                let dy = pTop.y;
+                let dh = pBot.y - pTop.y;
+                
+                // Source column coordinates on the image
+                let sx, sw;
+                let srcW = srcXEnd - srcXStart;
+                if (isLeftWall) {
+                    sx = srcXStart + floor(t * srcW);
+                    sw = ceil((nextT - t) * srcW);
+                } else {
+                    sx = srcXStart + floor((1.0 - nextT) * srcW);
+                    sw = ceil((nextT - t) * srcW);
+                }
+                
+                if (sw > 0 && dw > 0) {
+                    image(img, dx, dy, dw, dh, sx, 0, sw, img.height);
+                }
+            }
+            pop();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UTILITY GRAPHICS DRAW CYCLES
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function drawRecursiveBranch3D(wallX, y, z, len, angle, branchAngle, depth) {
+            if (depth <= 0) return;
+            let nextY = y + sin(angle) * len;
+            let nextZ = z + cos(angle) * len * 0.7;
+            let pStart = project3D(wallX, y, z);
+            let pEnd = project3D(wallX, nextY, nextZ);
+            strokeWeight(depth * 0.8 * pStart.scale);
+            line(pStart.x, pStart.y, pEnd.x, pEnd.y);
+            drawRecursiveBranch3D(wallX, nextY, nextZ, len * 0.76, angle - branchAngle, branchAngle, depth - 1);
+            drawRecursiveBranch3D(wallX, nextY, nextZ, len * 0.76, angle + branchAngle, branchAngle, depth - 1);
+        }
+
+        function drawExhibitionLabel(X, Y, Z, title, medium, isLeftWall = false) {
+            let p = project3D(X, Y, Z);
+            let size = p.scale;
+            if (size < 0.15) return;
+
+            let labelW = 75 * size;
+            let labelH = 26 * size;
+
+            push();
+            translate(p.x, p.y);
+            
+            fill(8, 8, 10, 220);
+            stroke(30, 30, 34);
+            strokeWeight(1 * size);
+            rect(isLeftWall ? -labelW - 10 : 10, 0, labelW, labelH);
+
+            noStroke();
+            fill(varColorValue('--console-text'));
+            let displayTitle = title.substring(0, 14) + (title.length > 14 ? ".." : "");
+            let displayMed = medium.substring(0, 15);
+            
+            textSize(5 * size);
+            textAlign(LEFT, TOP);
+            text(displayTitle.toUpperCase(), isLeftWall ? -labelW - 6 : 14, 4 * size);
+            
+            fill(varColorValue('--console-muted'));
+            textSize(4 * size);
+            text(displayMed.toUpperCase(), isLeftWall ? -labelW - 6 : 14, 13 * size);
+            pop();
+        }
+
+        function varColorValue(varName) {
+            if (varName === '--console-text') return color(226, 226, 228);
+            if (varName === '--console-muted') return color(98, 98, 101);
+            return color(255, 159, 0);
+        }
+
+        function drawPedestalsAndSculptures() {
+            drawSleekPedestal(-1.1, 3.5, 0.22, 0.85);
+            drawSleekPedestal(0.75, 2.2, 0.26, 0.85);
+
+            // Project the default generative fallback graphics as rotating holographic screens hovering above the columns!
+            let leftFallback = (fallbackArtworks && fallbackArtworks[1]) ? fallbackArtworks[1].img : null;
+            let rightFallback = (fallbackArtworks && fallbackArtworks[2]) ? fallbackArtworks[2].img : null;
+            
+            if (leftFallback) {
+                drawRotatingFloatingScreen(-1.1, -0.15, 3.5, 0.18, frameCount * 0.015, leftFallback, color(params.colorPalette[1]));
+            } else {
+                drawTesseractSculpture(-1.1, -0.36, 3.5, 0.11, frameCount * 0.015);
+            }
+
+            if (rightFallback) {
+                drawRotatingFloatingScreen(0.75, -0.15, 2.2, 0.20, frameCount * 0.02, rightFallback, color(params.colorPalette[2]));
+            } else {
+                drawTezosLogoSculpture(0.75, -0.36, 2.2, 0.12, frameCount * 0.02);
+            }
+        }
+
+        function drawSleekPedestal(X, Z, width3D, height3D) {
+            let w = width3D;
+            let h = height3D;
+            let yBottom = -1.5;
+            let yTop = -1.5 + h;
+
+            let blf = project3D(X - w/2, yBottom, Z - w/2);
+            let brf = project3D(X + w/2, yBottom, Z - w/2);
+            let tlf = project3D(X - w/2, yTop, Z - w/2);
+            let trf = project3D(X + w/2, yTop, Z - w/2);
+
+            let blb = project3D(X - w/2, yBottom, Z + w/2);
+            let brb = project3D(X + w/2, yBottom, Z + w/2);
+            let tlb = project3D(X - w/2, yTop, Z + w/2);
+            let trb = project3D(X + w/2, yTop, Z + w/2);
+
+            noStroke();
+
+            if (isRenderingReflection) {
+                fill(8, 8, 10, 50 * params.floorReflectivity);
+                beginShape();
+                vertex(tlf.x, tlf.y);
+                vertex(trf.x, trf.y);
+                vertex(brf.x, brf.y);
+                vertex(blf.x, blf.y);
+                endShape(CLOSE);
+                return;
+            }
+
+            // Pedestal Shadow
+            let shadowProj = project3D(X + 0.05, -1.5, Z + 0.05);
+            fill(0, 0, 0, 180);
+            ellipse(shadowProj.x, shadowProj.y, w * 500 * shadowProj.scale * 2.0, w * 500 * shadowProj.scale * 0.8);
+
+            // Front Face
+            fill(12, 12, 14);
+            beginShape();
+            vertex(tlf.x, tlf.y);
+            vertex(trf.x, trf.y);
+            vertex(brf.x, brf.y);
+            vertex(blf.x, blf.y);
+            endShape(CLOSE);
+
+            // Sides
+            if (X < 0) {
+                fill(18, 18, 20);
+                beginShape();
+                vertex(trf.x, trf.y);
+                vertex(trb.x, trb.y);
+                vertex(brb.x, brb.y);
+                vertex(brf.x, brf.y);
+                endShape(CLOSE);
+            } else {
+                fill(8, 8, 10);
+                beginShape();
+                vertex(tlf.x, tlf.y);
+                vertex(tlb.x, tlb.y);
+                vertex(blb.x, blb.y);
+                vertex(blf.x, blf.y);
+                endShape(CLOSE);
+            }
+
+            // Top Face
+            fill(26, 26, 29);
+            beginShape();
+            vertex(tlf.x, tlf.y);
+            vertex(trf.x, trf.y);
+            vertex(trb.x, trb.y);
+            vertex(tlb.x, tlb.y);
+            endShape(CLOSE);
+
+            // Muted edge lines
+            stroke(40, 40, 45);
+            strokeWeight(1);
+            line(tlf.x, tlf.y, trf.x, trf.y);
+            if (X < 0) line(trf.x, trf.y, trb.x, trb.y);
+            else line(tlf.x, tlf.y, tlb.x, tlb.y);
+        }
+
+        // Texture-mapped 3D rotating floating holographic screen
+        function drawRotatingFloatingScreen(X, Y, Z, size, angle, img, col) {
+            let steps = 40; // Slice density
+            let imgAlpha = isRenderingReflection ? 50 * params.floorReflectivity : 180;
+            
+            let yTop = Y + size;
+            let yBot = Y - size;
+            
+            // 1. Draw soft volumetric projection beam (only when not rendering reflection)
+            if (!isRenderingReflection) {
+                let pedTopCenter = project3D(X, -0.65, Z); // Pedestal top is at Y = -0.65
+                let screenCenter = project3D(X, Y, Z);
+                stroke(col.levels[0], col.levels[1], col.levels[2], 25 * params.glowIntensity);
+                strokeWeight(2);
+                line(pedTopCenter.x, pedTopCenter.y, screenCenter.x, screenCenter.y);
+                
+                // Holographic volumetric glow cone
+                noStroke();
+                fill(col.levels[0], col.levels[1], col.levels[2], 10 * params.glowIntensity);
+                beginShape();
+                let pedL = project3D(X - 0.08, -0.65, Z);
+                let pedR = project3D(X + 0.08, -0.65, Z);
+                let scrL = project3D(X - size * 0.5, Y, Z);
+                let scrR = project3D(X + size * 0.5, Y, Z);
+                vertex(pedL.x, pedL.y);
+                vertex(scrL.x, scrL.y);
+                vertex(scrR.x, scrR.y);
+                vertex(pedR.x, pedR.y);
+                endShape(CLOSE);
+            }
+            
+            // 2. Draw rotating screen corners in 3D perspective
+            let pTL = project3D(X + (-size) * cos(angle), yTop, Z + (-size) * sin(angle));
+            let pTR = project3D(X + size * cos(angle), yTop, Z + size * sin(angle));
+            let pBR = project3D(X + size * cos(angle), yBot, Z + size * sin(angle));
+            let pBL = project3D(X + (-size) * cos(angle), yBot, Z + (-size) * sin(angle));
+            
+            // Draw sleek glowing borders
+            stroke(col.levels[0], col.levels[1], col.levels[2], isRenderingReflection ? 40 * params.floorReflectivity : 150);
+            strokeWeight(1.5 * pTL.scale);
+            noFill();
+            beginShape();
+            vertex(pTL.x, pTL.y);
+            vertex(pTR.x, pTR.y);
+            vertex(pBR.x, pBR.y);
+            vertex(pBL.x, pBL.y);
+            endShape(CLOSE);
+            
+            // 3. Draw texture-mapped image slices in perspective
+            push();
+            tint(255, imgAlpha);
+            for (let i = 0; i < steps; i++) {
+                let t = i / steps;
+                let nextT = (i + 1) / steps;
+                
+                let lx = lerp(-size, size, t);
+                let nextLx = lerp(-size, size, nextT);
+                
+                let z = Z + lx * sin(angle);
+                let x = X + lx * cos(angle);
+                
+                let nextZ = Z + nextLx * sin(angle);
+                let nextX = X + nextLx * cos(angle);
+                
+                let pTop = project3D(x, yTop, z);
+                let pBot = project3D(x, yBot, z);
+                let pNextTop = project3D(nextX, yTop, nextZ);
+                
+                let dx = min(pTop.x, pNextTop.x);
+                let dw = abs(pNextTop.x - pTop.x) + 1.2; // Overlap to prevent scanline gaps
+                
+                let dy = pTop.y;
+                let dh = pBot.y - pTop.y;
+                
+                let sx = floor(t * img.width);
+                let sw = ceil((nextT - t) * img.width);
+                
+                if (sw > 0 && dw > 0) {
+                    image(img, dx, dy, dw, dh, sx, 0, sw, img.height);
+                }
+            }
+            pop();
+        }
+
+        function drawTesseractSculpture(X, Y, Z, size, angle) {
+            let col = color(params.colorPalette[1]);
+            let oVertices = [
+                createVector(-1, -1, -1), createVector(1, -1, -1),
+                createVector(1, 1, -1), createVector(-1, 1, -1),
+                createVector(-1, -1, 1), createVector(1, -1, 1),
+                createVector(1, 1, 1), createVector(-1, 1, 1)
+            ];
+
+            let iVertices = oVertices.map(v => v.copy().mult(0.55));
+            let rotateVertex = (v) => {
+                let x1 = v.x * cos(angle) - v.z * sin(angle);
+                let z1 = v.x * sin(angle) + v.z * cos(angle);
+                let y2 = v.y * cos(angle * 0.7) - z1 * sin(angle * 0.7);
+                let z2 = v.y * sin(angle * 0.7) + z1 * cos(angle * 0.7);
+                return createVector(x1, y2, z2);
+            };
+
+            let projO = oVertices.map(v => rotateVertex(v).mult(size)).map(v => project3D(X + v.x, Y + v.y, Z + v.z));
+            let projI = iVertices.map(v => rotateVertex(v).mult(size)).map(v => project3D(X + v.x, Y + v.y, Z + v.z));
+
+            if (isRenderingReflection) {
+                stroke(col.levels[0], col.levels[1], col.levels[2], 50 * params.floorReflectivity);
+                strokeWeight(1);
+            } else {
+                stroke(col.levels[0], col.levels[1], col.levels[2], 180);
+                strokeWeight(1.5 * projO[0].scale);
+            }
+            noFill();
+
+            let cubeEdges = [
+                [0,1], [1,2], [2,3], [3,0],
+                [4,5], [5,6], [6,7], [7,4],
+                [0,4], [1,5], [2,6], [3,7]
+            ];
+
+            for (let edge of cubeEdges) {
+                line(projO[edge[0]].x, projO[edge[0]].y, projO[edge[1]].x, projO[edge[1]].y);
+                line(projI[edge[0]].x, projI[edge[0]].y, projI[edge[1]].x, projI[edge[1]].y);
+            }
+            for (let i = 0; i < 8; i++) {
+                line(projO[i].x, projO[i].y, projI[i].x, projI[i].y);
+            }
+        }
+
+        function drawTezosLogoSculpture(X, Y, Z, size, angle) {
+            let col = color(params.colorPalette[2]);
+            let stemTop = createVector(0, 0.20, 0);
+            let stemBot = createVector(0, -0.20, 0);
+            let c1L = createVector(-0.09, 0.07, 0);
+            let c1R = createVector(0.09, 0.07, 0);
+            let c2L = createVector(-0.09, -0.07, 0);
+            let c2R = createVector(0.09, -0.07, 0);
+            let loopPoints = [
+                createVector(-0.09, 0.16, 0),
+                createVector(0.09, 0.16, 0),
+                createVector(-0.09, -0.16, 0),
+                createVector(0.09, -0.16, 0)
+            ];
+
+            let rot = (v) => {
+                let rx = v.x * cos(angle) - v.z * sin(angle);
+                let rz = v.x * sin(angle) + v.z * cos(angle);
+                return createVector(rx, v.y, rz).mult(size);
+            };
+
+            let pStemTop = project3D(X + rot(stemTop).x, Y + rot(stemTop).y, Z + rot(stemTop).z);
+            let pStemBot = project3D(X + rot(stemBot).x, Y + rot(stemBot).y, Z + rot(stemBot).z);
+            let pC1L = project3D(X + rot(c1L).x, Y + rot(c1L).y, Z + rot(c1L).z);
+            let pC1R = project3D(X + rot(c1R).x, Y + rot(c1R).y, Z + rot(c1R).z);
+            let pC2L = project3D(X + rot(c2L).x, Y + rot(c2L).y, Z + rot(c2L).z);
+            let pC2R = project3D(X + rot(c2R).x, Y + rot(c2R).y, Z + rot(c2R).z);
+            let pLoops = loopPoints.map(v => project3D(X + rot(v).x, Y + rot(v).y, Z + rot(v).z));
+
+            if (isRenderingReflection) {
+                stroke(col.levels[0], col.levels[1], col.levels[2], 50 * params.floorReflectivity);
+                strokeWeight(1);
+            } else {
+                stroke(col.levels[0], col.levels[1], col.levels[2], 200);
+                strokeWeight(2.0 * pStemTop.scale);
+            }
+            noFill();
+
+            line(pStemTop.x, pStemTop.y, pStemBot.x, pStemBot.y);
+            line(pC1L.x, pC1L.y, pC1R.x, pC1R.y);
+            line(pC2L.x, pC2L.y, pC2R.x, pC2R.y);
+            beginShape();
+            vertex(pLoops[0].x, pLoops[0].y);
+            vertex(pLoops[1].x, pLoops[1].y);
+            vertex(pLoops[2].x, pLoops[2].y);
+            vertex(pLoops[3].x, pLoops[3].y);
+            endShape();
+        }
+
+        function drawSpotlights() {
+            if (isRenderingReflection) return;
+            drawVolumetricLightCone(spotLeft3D, createVector(-1.1, -0.65, 3.5));
+            drawVolumetricLightCone(spotRight3D, createVector(0.75, -0.65, 2.2));
+        }
+
+        function drawVolumetricLightCone(src3D, tgt3D) {
+            let src = project3D(src3D.x, src3D.y, src3D.z);
+            let tgt = project3D(tgt3D.x, tgt3D.y, tgt3D.z);
+            let wSrc = 18 * src.scale;
+            let wTgt = 160 * tgt.scale;
+
+            push();
+            blendMode(ADD);
+            
+            let grad = drawingContext.createLinearGradient(src.x, src.y, tgt.x, tgt.y);
+            grad.addColorStop(0.0, 'rgba(255, 255, 235, 0.18)');
+            grad.addColorStop(0.4, 'rgba(255, 255, 235, 0.07)');
+            grad.addColorStop(1.0, 'rgba(255, 255, 235, 0.0)');
+            
+            drawingContext.fillStyle = grad;
+            noStroke();
+
+            beginShape();
+            vertex(src.x - wSrc/2, src.y);
+            vertex(src.x + wSrc/2, src.y);
+            vertex(tgt.x + wTgt/2, tgt.y);
+            vertex(tgt.x - wTgt/2, tgt.y);
+            endShape(CLOSE);
+
+            fill(255, 255, 240, 22 * params.glowIntensity);
+            ellipse(tgt.x, tgt.y, wTgt, wTgt * 0.4);
+            pop();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SWARM TELEMETRY & LOCOMOTION
+        // ═══════════════════════════════════════════════════════════════════════
+
+        class Ant {
+            constructor(index) {
+                this.id = index;
+                this.reset();
+                this.progress = random(0.0, 1.0);
+                this.pos = getTrailPoint(this.progress);
+                
+                if (random() < 0.5) {
+                    this.state = 'TO_FOOD';
+                } else {
+                    this.state = 'RETURNING';
+                    this.hasCargo = true;
+                }
+
+                if (index < params.antPopulation * params.scoutRatio) {
+                    this.state = 'SCOUT';
+                    this.hasCargo = false;
+                    this.pos = createVector(random(-1.5, 1.5), -1.5, random(1.2, 4.0));
+                }
+            }
+
+            reset() {
+                this.pos = nestPos3D.copy();
+                this.vel = createVector(0, 0, 0);
+                this.acc = createVector(0, 0, 0);
+                this.progress = 0.05;
+                this.state = 'TO_FOOD';
+                this.hasCargo = false;
+                this.pauseFrames = 0;
+                this.speedMult = random(0.85, 1.15);
+                this.legPhase = random(TWO_PI);
+                this.trailOffset = createVector(random(-0.06, 0.06), 0, random(-0.04, 0.04));
+            }
+
+            update() {
+                if (this.pauseFrames > 0) {
+                    this.pauseFrames--;
+                    this.legPhase += 0.02;
+                    return;
+                }
+
+                let maxSpeed = 0.016 * params.antSpeed * this.speedMult;
+                if (this.state === 'SCOUT') {
+                    maxSpeed = 0.012 * params.antSpeed * this.speedMult;
+                }
+                
+                let maxForce = maxSpeed * 0.25; // Smooth steering proportional to speed
+                let steerForce = createVector(0, 0, 0);
+
+                if (this.state === 'TO_FOOD') {
+                    let targetProgress = min(1.0, this.progress + 0.06);
+                    let targetPos = getTrailPoint(targetProgress).add(this.trailOffset);
+                    steerForce = this.seek(targetPos, maxSpeed, maxForce);
+
+                    let actualVelocity = this.vel.mag();
+                    this.progress += actualVelocity * 0.16; 
+                    
+                    if (this.progress >= 0.99 || dist(this.pos.x, this.pos.z, candyPos3D.x, candyPos3D.z) < 0.10) {
+                        this.state = 'RETURNING';
+                        this.progress = 1.0;
+                        this.pauseFrames = floor(random(25, 55)); 
+                        this.hasCargo = true;
+                    }
+
+                } else if (this.state === 'RETURNING') {
+                    let targetProgress = max(0.0, this.progress - 0.06);
+                    let targetPos = getTrailPoint(targetProgress).add(this.trailOffset);
+                    steerForce = this.seek(targetPos, maxSpeed * 0.82, maxForce); 
+
+                    let actualVelocity = this.vel.mag();
+                    this.progress -= actualVelocity * 0.16;
+
+                    if (this.progress <= 0.01) {
+                        this.reset();
+                        this.pauseFrames = floor(random(15, 35)); 
+                    }
+
+                } else if (this.state === 'SCOUT') {
+                    let wanderAngle = noise(this.id, frameCount * 0.006) * TWO_PI * 3.5;
+                    let wanderForce = createVector(cos(wanderAngle), 0, sin(wanderAngle)).mult(maxSpeed * 0.12);
+                    this.acc.add(wanderForce);
+
+                    let borderForce = maxSpeed * 0.8;
+                    if (this.pos.x < -1.7) this.acc.add(createVector(borderForce, 0, 0));
+                    if (this.pos.x > 1.7) this.acc.add(createVector(-borderForce, 0, 0));
+                    if (this.pos.z < 1.1) this.acc.add(createVector(0, 0, borderForce));
+                    if (this.pos.z > 4.5) this.acc.add(createVector(0, 0, -borderForce));
+
+                    if (dist(this.pos.x, this.pos.z, candyPos3D.x, candyPos3D.z) < 0.22) {
+                        this.state = 'RETURNING';
+                        this.progress = 1.0;
+                        this.pauseFrames = floor(random(30, 60));
+                        this.hasCargo = true;
+                    }
+
+                    // Scout senses pheromone trail corridor
+                    if (random() < 0.01) {
+                        let closestT = 0;
+                        let minDist = 999;
+                        for (let t = 0.1; t < 0.9; t += 0.05) {
+                            let tp = getTrailPoint(t);
+                            let d = dist(this.pos.x, this.pos.z, tp.x, tp.z);
+                            if (d < minDist) {
+                                minDist = d;
+                                closestT = t;
+                            }
+                        }
+                        if (minDist < 0.15) {
+                            this.state = 'TO_FOOD';
+                            this.progress = closestT;
+                            this.trailOffset.set(random(-0.06, 0.06), 0, random(-0.04, 0.04));
+                        }
+                    }
+                }
+
+                this.acc.add(steerForce);
+                this.vel.add(this.acc);
+                this.vel.limit(maxSpeed);
+                this.pos.add(this.vel);
+                this.acc.mult(0); 
+
+                this.legPhase += this.vel.mag() * 14.0;
+            }
+
+            seek(target, maxSpeed, maxForce) {
+                let desired = p5.Vector.sub(target, this.pos);
+                desired.normalize();
+                desired.mult(maxSpeed);
+                let steer = p5.Vector.sub(desired, this.vel);
+                steer.limit(maxForce);
+                return steer;
+            }
+
+            drawShadow() {
+                if (isRenderingReflection) return;
+
+                let d1 = dist(this.pos.x, this.pos.z, spotLeft3D.x, spotLeft3D.z);
+                let d2 = dist(this.pos.x, this.pos.z, spotRight3D.x, spotRight3D.z);
+                let spot = d1 < d2 ? spotLeft3D : spotRight3D;
+
+                let shadowDir = createVector(this.pos.x - spot.x, 0, this.pos.z - spot.z);
+                let dToLight = shadowDir.mag();
+                shadowDir.normalize();
+
+                let shadowDist = min(0.18, dToLight * 0.05);
+                let shadowPos3D = createVector(this.pos.x + shadowDir.x * shadowDist, -1.5, this.pos.z + shadowDir.z * shadowDist);
+
+                let sp = project3D(shadowPos3D.x, -1.5, shadowPos3D.z);
+                let sizeScale = sp.scale;
+
+                let p1 = project3D(this.pos.x, -1.5, this.pos.z);
+                let p2 = project3D(this.pos.x + this.vel.x, -1.5, this.pos.z + this.vel.z);
+                let angle2D = atan2(p2.y - p1.y, p2.x - p1.x);
+
+                push();
+                translate(sp.x, sp.y);
+                rotate(angle2D);
+                
+                let shadowAlpha = map(shadowDist, 0, 0.18, 120, 30) * params.glowIntensity;
+                fill(0, 0, 0, shadowAlpha);
+                noStroke();
+                ellipse(-2 * sizeScale, 0, 15 * sizeScale, 5 * sizeScale);
+                pop();
+            }
+
+            draw() {
+                let p = project3D(this.pos.x, -1.5, this.pos.z);
+                let sizeScale = p.scale;
+
+                let angle2D;
+                if (this.vel.magSq() > 0.0001) {
+                    let pAhead = project3D(this.pos.x + this.vel.x * 0.1, -1.5, this.pos.z + this.vel.z * 0.1);
+                    angle2D = atan2(pAhead.y - p.y, pAhead.x - p.x);
+                } else {
+                    let target = (this.state === 'TO_FOOD') ? candyPos3D : nestPos3D;
+                    let pTarget = project3D(target.x, -1.5, target.z);
+                    angle2D = atan2(pTarget.y - p.y, pTarget.x - p.x);
+                }
+
+                push();
+                translate(p.x, p.y);
+                rotate(angle2D);
+
+                let baseBodyColor = color(165, 165, 175); // Bright warm silver/grey
+                let glowColor = color(0, 0, 0, 0);
+                
+                let leftDist = dist(this.pos.x, this.pos.z, -2.0, 3.3);
+                let rightDist = dist(this.pos.x, this.pos.z, 2.0, 3.3);
+                let centerDist = dist(this.pos.x, this.pos.z, 0.0, 6.0);
+                
+                if (leftDist < 1.5) {
+                    let blend = map(leftDist, 0, 1.5, 1.0, 0.0);
+                    glowColor = lerpColor(glowColor, color(params.colorPalette[1]), blend * 0.35);
+                }
+                if (rightDist < 1.5) {
+                    let blend = map(rightDist, 0, 1.5, 1.0, 0.0);
+                    glowColor = lerpColor(glowColor, color(params.colorPalette[2]), blend * 0.35);
+                }
+                if (centerDist < 3.0) {
+                    let blend = map(centerDist, 0, 3.0, 1.0, 0.0);
+                    glowColor = lerpColor(glowColor, color(params.colorPalette[1]), blend * 0.25);
+                }
+
+                let finalBodyCol = lerpColor(baseBodyColor, glowColor, params.glowIntensity * 0.80);
+
+                // Calculate real-time spotlight illumination based on distance to light pools
+                let dToLeftPool = dist(this.pos.x, this.pos.z, -1.1, 3.5);
+                let dToRightPool = dist(this.pos.x, this.pos.z, 0.75, 2.2);
+                let spotIllum = 0.0;
+                if (dToLeftPool < 1.0) {
+                    spotIllum += map(dToLeftPool, 0, 1.0, 1.0, 0.0) * 0.8;
+                }
+                if (dToRightPool < 1.0) {
+                    spotIllum += map(dToRightPool, 0, 1.0, 1.0, 0.0) * 0.8;
+                }
+                spotIllum = min(1.0, spotIllum) * params.glowIntensity;
+                
+                // Warm spotlight color wash
+                let lightCol = color(255, 255, 230);
+                let illuminatedBodyCol = lerpColor(finalBodyCol, lightCol, spotIllum * 0.75);
+
+                if (isRenderingReflection) {
+                    let refAlpha = 32 * params.floorReflectivity;
+                    illuminatedBodyCol = color(illuminatedBodyCol.levels[0], illuminatedBodyCol.levels[1], illuminatedBodyCol.levels[2], refAlpha);
+                }
+
+                if (sizeScale >= 0.26) {
+                    // Legs
+                    if (isRenderingReflection) {
+                        let legCol = lerpColor(color(120, 120, 130), lightCol, spotIllum * 0.5);
+                        stroke(legCol.levels[0], legCol.levels[1], legCol.levels[2], 25 * params.floorReflectivity);
+                    } else {
+                        // Legs are lit dynamically by the spotlights!
+                        let legCol = lerpColor(color(120, 120, 130), lightCol, spotIllum * 0.5);
+                        stroke(legCol);
+                    }
+                    strokeWeight(1.2 * sizeScale);
+                    noFill();
+
+                    let legWiggle = 0.24 * sin(this.legPhase);
+
+                    drawAntLeg(-1, -1, -45, -legWiggle, sizeScale); 
+                    drawAntLeg(0, -1, -90, legWiggle, sizeScale);   
+                    drawAntLeg(1, -1, -135, -legWiggle, sizeScale); 
+
+                    drawAntLeg(-1, 1, 45, legWiggle, sizeScale);   
+                    drawAntLeg(0, 1, 90, -legWiggle, sizeScale);    
+                    drawAntLeg(1, 1, 135, legWiggle, sizeScale);   
+
+                    // Antennae
+                    if (isRenderingReflection) {
+                        let antCol = lerpColor(color(120, 120, 130), lightCol, spotIllum * 0.5);
+                        stroke(antCol.levels[0], antCol.levels[1], antCol.levels[2], 20 * params.floorReflectivity);
+                    } else {
+                        let antCol = lerpColor(color(120, 120, 130), lightCol, spotIllum * 0.5);
+                        stroke(antCol);
+                    }
+                    strokeWeight(0.8 * sizeScale);
+                    let antWiggleL = sin(frameCount * 0.15 + this.id) * 0.15;
+                    let antWiggleR = cos(frameCount * 0.13 + this.id * 1.3) * 0.15;
+                    
+                    beginShape();
+                    vertex(6 * sizeScale, -1 * sizeScale);
+                    vertex(10 * sizeScale, -4 * sizeScale + antWiggleL * 6 * sizeScale);
+                    vertex(14 * sizeScale, -5 * sizeScale + antWiggleL * 9 * sizeScale);
+                    endShape();
+
+                    beginShape();
+                    vertex(6 * sizeScale, 1 * sizeScale);
+                    vertex(10 * sizeScale, 4 * sizeScale + antWiggleR * 6 * sizeScale);
+                    vertex(14 * sizeScale, 5 * sizeScale + antWiggleR * 9 * sizeScale);
+                    endShape();
+
+                    // Segmented Body
+                    noStroke();
+                    
+                    // Abdomen
+                    fill(illuminatedBodyCol);
+                    ellipse(-5 * sizeScale, 0, 11 * sizeScale, 6.5 * sizeScale);
+                    
+                    if (!isRenderingReflection) {
+                        fill(240, 240, 255, 60);
+                        ellipse(-6 * sizeScale, -1.8 * sizeScale, 3.5 * sizeScale, 1.5 * sizeScale);
+                    }
+
+                    // Thorax
+                    fill(illuminatedBodyCol);
+                    ellipse(1 * sizeScale, 0, 6 * sizeScale, 4.8 * sizeScale);
+                    
+                    if (!isRenderingReflection) {
+                        fill(240, 240, 255, 60);
+                        ellipse(0.5 * sizeScale, -1.2 * sizeScale, 2 * sizeScale, 0.9 * sizeScale);
+                    }
+
+                    // Head
+                    fill(illuminatedBodyCol);
+                    push();
+                    translate(6 * sizeScale, 0);
+                    ellipse(0, 0, 4.8 * sizeScale, 4.2 * sizeScale);
+                    
+                    // Glowing pheromone-sensing eyes
+                    if (!isRenderingReflection) {
+                        fill(255, 159, 0); // Glowing amber
+                        noStroke();
+                        ellipse(1.5 * sizeScale, -1.0 * sizeScale, 1.2 * sizeScale, 1.2 * sizeScale);
+                        ellipse(1.5 * sizeScale, 1.0 * sizeScale, 1.2 * sizeScale, 1.2 * sizeScale);
+                    }
+                    
+                    stroke(10, 10, 12);
+                    strokeWeight(0.9 * sizeScale);
+                    noFill();
+                    arc(1.8 * sizeScale, -1 * sizeScale, 3 * sizeScale, 3 * sizeScale, -HALF_PI, 0);
+                    arc(1.8 * sizeScale, 1 * sizeScale, 3 * sizeScale, 3 * sizeScale, 0, HALF_PI);
+                    pop();
+
+                    // Cargo
+                    if (this.hasCargo) {
+                        let candyCol = color(params.colorPalette[0]);
+                        if (isRenderingReflection) {
+                            candyCol = color(candyCol.levels[0], candyCol.levels[1], candyCol.levels[2], 40 * params.floorReflectivity);
+                        }
+                        
+                        push();
+                        translate(9 * sizeScale, 0);
+                        noStroke();
+                        fill(candyCol.levels[0], candyCol.levels[1], candyCol.levels[2], isRenderingReflection ? 30 : 70);
+                        ellipse(0, 0, 7.5 * sizeScale, 7.5 * sizeScale);
+                        fill(candyCol);
+                        ellipse(0, 0, 3.5 * sizeScale, 3.5 * sizeScale);
+                        pop();
+                    }
+
+                } else {
+                    noStroke();
+                    fill(illuminatedBodyCol);
+                    ellipse(-3 * sizeScale, 0, 7.5 * sizeScale, 3.8 * sizeScale); 
+                    ellipse(1.5 * sizeScale, 0, 3.8 * sizeScale, 2.8 * sizeScale); 
+                    ellipse(4 * sizeScale, 0, 2.8 * sizeScale, 2.6 * sizeScale);  
+                    
+                    if (this.hasCargo) {
+                        let candyCol = color(params.colorPalette[0]);
+                        if (isRenderingReflection) {
+                            candyCol = color(candyCol.levels[0], candyCol.levels[1], candyCol.levels[2], 40 * params.floorReflectivity);
+                        }
+                        fill(candyCol);
+                        ellipse(6 * sizeScale, 0, 3 * sizeScale, 3 * sizeScale);
+                    }
+                }
+
+                pop();
+            }
+        }
+
+    // Draw a multi-segment bent ant leg (Global function outside class scope)
+    function drawAntLeg(segmentIndex, sideSign, baseAngleDeg, wiggleRad, sizeScale) {
+        let startX = segmentIndex * 1.8 * sizeScale;
+        let startY = sideSign * 2.2 * sizeScale;
+
+        let angleRad = radians(baseAngleDeg) + wiggleRad;
+
+        let femurLen = 5.5 * sizeScale;
+        let tibiaLen = 6.5 * sizeScale;
+
+        let jointX = startX + cos(angleRad) * femurLen;
+        let jointY = startY + sin(angleRad) * femurLen;
+
+        let tibiaAngle = angleRad + sideSign * 0.45; 
+        let footX = jointX + cos(tibiaAngle) * tibiaLen;
+        let footY = jointY + sin(tibiaAngle) * tibiaLen;
+
+        beginShape();
+        vertex(startX, startY);
+        vertex(jointX, jointY);
+        vertex(footX, footY);
+        endShape();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // OFFSCREEN GENERATIVE BUFFERS CYCLE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function updateFlowFieldBuffer() {
+        let col = color(params.colorPalette[1]); 
+        centerScreenBuffer.background(10, 10, 12, 22); 
+
+        centerScreenBuffer.noStroke();
+        for (let p of flowParticles) {
+            let angle = noise(p.pos.x * 0.008, p.pos.y * 0.008, frameCount * 0.005) * TWO_PI * 2.5;
+            p.vel.set(cos(angle), sin(angle));
+            p.vel.mult(p.speed);
+            p.pos.add(p.vel);
+
+            centerScreenBuffer.fill(col.levels[0], col.levels[1], col.levels[2], 180);
+            centerScreenBuffer.ellipse(p.pos.x, p.pos.y, 4, 4);
+
+            if (p.pos.x < 0) p.pos.x = centerScreenBuffer.width;
+            if (p.pos.x > centerScreenBuffer.width) p.pos.x = 0;
+            if (p.pos.y < 0) p.pos.y = centerScreenBuffer.height;
+            if (p.pos.y > centerScreenBuffer.height) p.pos.y = 0;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INPUT CONTROLLERS & INTERACTION MATRIX
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function mousePressed() {
+        if (mouseX >= 0 && mouseX <= width && mouseY > 578 && mouseY <= height) {
+            let clickedPos3D = unprojectFloor(mouseX, mouseY);
+            
+            if (abs(clickedPos3D.x) < 1.7 && clickedPos3D.z >= 1.1 && clickedPos3D.z <= 4.5) {
+                candyPos3D.set(clickedPos3D.x, -1.5, clickedPos3D.z);
+                
+                p1Offset.set(random(-0.20, 0.20), 0, random(-0.08, 0.08));
+                p2Offset.set(random(-0.20, 0.20), 0, random(-0.08, 0.08));
+
+                for (let ant of ants) {
+                    if (ant.state === 'TO_FOOD') {
+                        ant.trailOffset.set(random(-0.06, 0.06), 0, random(-0.04, 0.04));
+                    }
+                }
+            }
+        }
+    }
+
+    function updateParam(paramName, value) {
+        params[paramName] = parseFloat(value);
+        document.getElementById(paramName + '-value').textContent = parseFloat(value).toFixed(2).replace(/\.00$/, '');
+        
+        if (paramName === 'antPopulation') {
+            adjustAntPopulation();
+        }
+    }
+
+    function updateDropdown(id, value) {
+        params[id] = value;
+    }
+
+    function updateColor(id, value) {
+        document.getElementById(id + '-value').textContent = value.toUpperCase();
+        
+        if (id === 'candyColor') params.colorPalette[0] = value;
+        if (id === 'leftScreenColor') params.colorPalette[1] = value;
+        if (id === 'rightScreenColor') params.colorPalette[2] = value;
+    }
+
+    function adjustAntPopulation() {
+        let currentPop = ants.length;
+        let targetPop = params.antPopulation;
+
+        if (currentPop < targetPop) {
+            for (let i = currentPop; i < targetPop; i++) {
+                ants.push(new Ant(i));
+            }
+        } else if (currentPop > targetPop) {
+            ants.splice(targetPop);
+        }
+    }
+
+    function togglePlayPause() {
+        isPaused = !isPaused;
+        let btn = document.getElementById('play-pause-btn');
+        if (isPaused) {
+            btn.textContent = '▶ Resume Simulation';
+            btn.classList.remove('accent');
+        } else {
+            btn.textContent = '⏸ Pause Simulation';
+            btn.classList.add('accent');
+        }
+    }
+
+    function resetParameters() {
+        params = {...defaultParams};
+        params.colorPalette = [...defaultParams.colorPalette];
+        isPaused = false;
+        
+        let btn = document.getElementById('play-pause-btn');
+        btn.textContent = '⏸ Pause Simulation';
+        btn.classList.add('accent');
+
+        let sliders = ['floorReflectivity', 'glowIntensity', 'antPopulation', 'antSpeed', 'trailCohesion', 'scoutRatio'];
+        for (let s of sliders) {
+            document.getElementById(s).value = params[s];
+            document.getElementById(s + '-value').textContent = params[s].toFixed(2).replace(/\.00$/, '');
+        }
+
+        document.getElementById('exhibitStyle').value = params.exhibitStyle;
+
+        document.getElementById('candyColor').value = params.colorPalette[0];
+        document.getElementById('candyColor-value').textContent = params.colorPalette[0].toUpperCase();
+        document.getElementById('leftScreenColor').value = params.colorPalette[1];
+        document.getElementById('leftScreenColor-value').textContent = params.colorPalette[1].toUpperCase();
+        document.getElementById('rightScreenColor').value = params.colorPalette[2];
+        document.getElementById('rightScreenColor-value').textContent = params.colorPalette[2].toUpperCase();
+
+        updateSeedDisplay();
+        initializeSystem();
+    }
+
+    function downloadArtwork() {
+        saveCanvas('emergent_trails_seed_' + params.seed, 'png');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SEED NAVIGATION PROTOCOLS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function updateSeedDisplay() {
+        document.getElementById('seed-input').value = params.seed;
+    }
+
+    function updateSeed() {
+        let input = document.getElementById('seed-input');
+        let newSeed = parseInt(input.value);
+        if (newSeed && newSeed > 0) {
+            params.seed = newSeed;
+            initializeSystem();
+        } else {
+            updateSeedDisplay();
+        }
+    }
+
+    function previousSeed() {
+        params.seed = Math.max(1, params.seed - 1);
+        updateSeedDisplay();
+        initializeSystem();
+    }
+
+    function nextSeed() {
+        params.seed = params.seed + 1;
+        updateSeedDisplay();
+        initializeSystem();
+    }
+
+    function randomSeedAndUpdate() {
+        params.seed = Math.floor(Math.random() * 999999) + 1;
+        updateSeedDisplay();
+        initializeSystem();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SLICED ASSETS TELEMETRY MODAL CONTROLLERS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function openArtworksModal() {
+        const modal = document.getElementById('artworks-modal');
+        const grid = document.getElementById('modal-art-grid');
+        
+        grid.innerHTML = '';
+        
+        if (loadedArtworks.length === 0) {
+            grid.innerHTML = `<div style="grid-column: span 3; color: var(--console-muted); font-size: 10px; text-align: center; text-transform: uppercase; padding: 40px 0;">No active blockchain assets ingested. Falling back to local generative algorithms.</div>`;
+        } else {
+            loadedArtworks.forEach((art, idx) => {
+                let screenName = ["Center Screen A", "Left Screen B", "Right Screen C"][idx] || "Screen Auxiliary";
+                let statusMsg = art.isFallback ? "Offline Cached // Vector Projector" : "Live Projected // Tezos Blockchain";
+                
+                let item = document.createElement('div');
+                item.className = 'modal-item';
+                
+                let imgContainer = document.createElement('div');
+                imgContainer.className = 'modal-img-container';
+                
+                // If it is a p5.Graphics buffer (fallback), append its canvas, else append an img element
+                if (art.isFallback) {
+                    let thumbCanvas = document.createElement('canvas');
+                    thumbCanvas.width = 150;
+                    thumbCanvas.height = 150;
+                    let ctx = thumbCanvas.getContext('2d');
+                    ctx.drawImage(art.img.canvas, 0, 0, 150, 150);
+                    imgContainer.appendChild(thumbCanvas);
+                } else {
+                    let imgEl = document.createElement('img');
+                    imgEl.src = art.img.canvas.toDataURL();
+                    imgEl.alt = art.title;
+                    imgContainer.appendChild(imgEl);
+                }
+                
+                let meta = document.createElement('div');
+                meta.className = 'modal-meta';
+                
+                let titleEl = document.createElement('div');
+                titleEl.className = 'modal-meta-title';
+                titleEl.textContent = art.title;
+                
+                let artistEl = document.createElement('div');
+                artistEl.className = 'modal-meta-artist';
+                artistEl.textContent = art.artist;
+                
+                let statusEl = document.createElement('div');
+                statusEl.className = 'modal-meta-status';
+                statusEl.textContent = `SYS_LOC: ${screenName} // ${statusMsg}`;
+                
+                meta.appendChild(titleEl);
+                meta.appendChild(artistEl);
+                meta.appendChild(statusEl);
+                
+                item.appendChild(imgContainer);
+                item.appendChild(meta);
+                grid.appendChild(item);
+            });
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeArtworksModal(event) {
+        document.getElementById('artworks-modal').style.display = 'none';
+    }
+
+    window.addEventListener('load', function() {
+        updateSeedDisplay();
+    });
+    </script>
+</body>
+</html>
